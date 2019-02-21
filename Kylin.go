@@ -27,19 +27,14 @@ func CreateFKKylin(	ProjectName string, Url string, UserName string, Password st
 	return p
 }
 
-func (k *FKKylin) query(tableName string, fields []string, where interface{}, offset int, limit int, isDebug bool)(*KylinResult, error){
-	querySQL, err := k.buildUpSQL(tableName, fields, where)
-	if err != nil{
-		return nil, err
-	}
-	if isDebug{
-		fmt.Println(querySQL)
-	}
+func (k *FKKylin) query(querySQL string, offset int, limit int, isDebug bool)(*QueryResult, error){
+
 	queryCondition := &QueryCondition{
 		SQL: querySQL,
 		Limit: limit,
 		Offset: offset,
-		ProjectName: k.ProjectName,
+		Project: k.ProjectName,
+		AcceptPartial: false,
 	}
 	httpCode, responseBody, err := k.sendQuery(queryCondition)
 	if err != nil{
@@ -90,6 +85,14 @@ func (k *FKKylin) buildUpSQL(tableName string, fields []string, where interface{
 				querySQL = querySQL + " and " + tableName + "." + strings.ToUpper(t.Tag.Get("json")) +
 					"=" + strconv.Itoa(v.Interface().(int))
 			}
+		} else if v.Type().String() == "int64"{
+			if t.Tag.Get("kylin") == "necessary_query_condition" && v.Interface().(int64) == 0{
+				return "", fmt.Errorf(t.Name + " shouldn't be empty")
+			}
+			if v.Interface().(int64) != 0{
+				querySQL = querySQL + " and " + tableName + "." + strings.ToUpper(t.Tag.Get("json")) +
+					"=" + strconv.Itoa((int)(v.Interface().(int64)))
+			}
 		} else if v.Type().String() == "string"{
 			if t.Tag.Get("kylin") == "necessary_query_condition" && v.Interface().(string) == ""{
 				return "", fmt.Errorf(t.Name + " shouldn't be empty")
@@ -121,11 +124,11 @@ func (k *FKKylin) buildUpSQL(tableName string, fields []string, where interface{
 	return querySQL, nil
 }
 
-func (k *FKKylin) parseQueryResult(body []byte) (*KylinResult, error){
+func (k *FKKylin) parseQueryResult(body []byte) (*QueryResult, error){
 	if body == nil{
 		return nil, fmt.Errorf("Empty http response body.")
 	}
-	qr := &KylinResult{}
+	qr := &QueryResult{}
 	err := json.Unmarshal(body, qr)
 	if err != nil{
 		return nil, err

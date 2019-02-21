@@ -16,20 +16,20 @@ func (k *FKKylin) Login() (code int, body []byte, err error) {
 }
 
 // 查询
-func (k *FKKylin) Query(tableName string, fields []string, where interface{}, offset int, limit int, isDebug bool) (result *QueryResult, err error) {
-	kr, err := k.query(tableName, fields, where, offset, limit, isDebug)
+func (k *FKKylin) QueryByStruct(tableName string, fields []string, where interface{}, offset int, limit int, isDebug bool) (*QueryResult, error) {
+	querySQL, err := k.buildUpSQL(tableName, fields, where)
 	if err != nil{
 		return nil, err
 	}
-	var metas []string
-	for _, m := range kr.ColumnMetas{
-		metas = append(metas, m.Name)
+	if isDebug{
+		fmt.Println(querySQL)
 	}
-	result = &QueryResult{
-		ColumnMetas: metas,
-		Result: kr.Result,
-	}
-	return
+	result, err := k.query(querySQL, offset, limit, isDebug)
+	return result, err
+}
+func (k *FKKylin) QueryBySQL(sql string, offset int, limit int, isDebug bool) (*QueryResult, error) {
+	result, err := k.query(sql, offset, limit, isDebug)
+	return result, err
 }
 
 // 查询Tables列表

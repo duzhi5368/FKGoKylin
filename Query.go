@@ -9,7 +9,8 @@ type QueryCondition struct {
 	SQL           string `json:"sql"`
 	Offset        int    `json:"offset"`
 	Limit         int    `json:"limit"`
-	ProjectName   string `json:"projectName"`
+	Project   string `json:"project"`
+	AcceptPartial bool `json:"acceptPartial"`
 }
 
 func (qc *QueryCondition) ToBytes() (result []byte) {
@@ -44,7 +45,7 @@ type Column struct {
 	Writable           bool   `json:"writable"`
 }
 
-type KylinResult struct {
+type QueryResult struct {
 	ColumnMetas       []*Column     `json:"columnMetas"`
 	Result            []interface{} `json:"results"`
 	Cube              string        `json:"cube"`
@@ -58,7 +59,18 @@ type KylinResult struct {
 	Partial           bool          `json:"partial"`
 }
 
-type QueryResult struct{
-	ColumnMetas []string      `json:"columnMetas"`
-	Result      []interface{} `json:"results"`
+func (q *QueryResult) ResultString() string{
+	out, err := json.Marshal(q.Result)
+	if err != nil {
+		return ""
+	}
+	return string(out[:])
+}
+
+func (q *QueryResult) String() string{
+	out, err := json.Marshal(q)
+	if err != nil {
+		return ""
+	}
+	return string(out[:])
 }
