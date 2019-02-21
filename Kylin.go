@@ -144,11 +144,14 @@ func (k *FKKylin) calcAuth() string{
 func (k *FKKylin) genBaseRequest() *fasthttp.Request{
 	request := fasthttp.AcquireRequest()
 	request.Header.Set("Authorization", k.calcAuth())
+	request.Header.Set("Content-Type", "application/json")
 	return request
 }
 
 func (k *FKKylin) do(request *fasthttp.Request) (code int, body []byte, err error) {
 	response := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseRequest(request)
+	defer fasthttp.ReleaseResponse(response)
 	err = fasthttp.Do(request, response)
 	if err == nil {
 		code = response.StatusCode()

@@ -38,8 +38,7 @@ func (k *FKKylin) ListTables() (code int, body []byte, err error) {
 		return 0, nil, fmt.Errorf("Project name shouldn't be empty.")
 	}
 	request := k.genBaseRequest()
-	request.SetRequestURI(k.Url + "/kylin/api/tables_and_columns")
-	request.PostArgs().Add("project", k.ProjectName)
+	request.SetRequestURI(k.Url + "/kylin/api/tables_and_columns?project=" + k.ProjectName)
 	request.Header.SetMethod("GET")
 	return k.do(request)
 }
@@ -47,11 +46,9 @@ func (k *FKKylin) ListTables() (code int, body []byte, err error) {
 // 查询Cube列表
 func (k *FKKylin) ListCubes(offset int, limit int) (code int, body []byte, err error) {
 	request := k.genBaseRequest()
-	request.SetRequestURI(k.Url + "/kylin/api/cubes")
+	request.SetRequestURI(k.Url + "/kylin/api/cubes?projectName=" + k.ProjectName +
+		"&offset=" + strconv.Itoa(offset) + "&limit=" + strconv.Itoa(limit))
 	request.Header.SetMethod("GET")
-	request.PostArgs().Add("offset", strconv.Itoa(offset))
-	request.PostArgs().Add("limit", strconv.Itoa(limit))
-	request.PostArgs().Add("projectName", k.ProjectName)
 	return k.do(request)
 }
 
