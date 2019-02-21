@@ -9,7 +9,14 @@ Url := "http://localhost:7070"
 UserName := "ADMIN"
 Password := "KYLIN"
 
-kylin := FKGoKylin.CreateFKKylin(ProjectName, Url, UserName, Password)
+kylin := FKGoKylin.CreateFKKylin(ProjectName, Url, UserName, Password)\
+if kylin == nil{
+	return nil, errors.New("create kylin object failed.")
+}
+_, _, err := kylin.Login()
+if err != nil{
+	return nil, err
+}
 code, responseBody, err := kylin.ListTables()
 // kylin.ListCubes(0,10)
 // kylin.GetCube("")
